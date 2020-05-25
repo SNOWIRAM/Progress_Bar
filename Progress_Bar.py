@@ -5,8 +5,6 @@ import inspect
 
 class Progress_Bar:
     avg_time_inc = 0
-    start_time = time.time()
-    progress_time = start_time
     executing_time = 0
     time_inc = 0
 
@@ -18,6 +16,7 @@ class Progress_Bar:
         self.start_time = time.time()
         self.report_interval = report_interval
         self.print_outer_function_name()
+        self.progress_time = time.time()
 
     @staticmethod
     def print_outer_function_name():
@@ -31,12 +30,10 @@ class Progress_Bar:
         self.i = i
 
     def set_time_inc(self, executing_time):
-        if self.time_inc == 0:
-            self.time_inc = executing_time - self.executing_time
+        self.time_inc = executing_time - self.executing_time
 
     def set_executing_time(self, progress_time):
-        if self.executing_time == 0:
-            self.executing_time = progress_time - self.progress_time
+        self.executing_time = progress_time - self.progress_time
 
     def set_progress_time(self, progress_time):
         self.progress_time = progress_time
@@ -53,6 +50,10 @@ class Progress_Bar:
             self.set_executing_time(progress_time)
 
         self.set_progress_time(progress_time)
+
+        # print('Executing_time:',self.executing_time)
+        # print('avg_inc:',self.avg_time_inc)
+        # print('time_inc:',self.time_inc)
 
     def progress_bar_cmd(self, progress_ratio, elapsed_time, time_left):
 
@@ -76,7 +77,7 @@ class Progress_Bar:
 
 
     def set_avg_time_inc(self, time_inc_unit):
-        self.avg_time_inc = time_inc_unit/(self.i+1) + ((self.avg_time_inc)*self.i)/(self.i+1)
+        self.avg_time_inc = time_inc_unit/(self.i+1) + ((self.avg_time_inc)*self.i/(self.i+1))
 
     def progress_report_simple_fn(self):
 
