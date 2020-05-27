@@ -54,6 +54,7 @@ class Progress_Bar:
 
 
     def set_progress_info(self, i, progress_time):
+
         if self.avg_time_inc == 0:
             self.avg_time_inc = self.time_inc
         temp_executing_time = progress_time - self.progress_time
@@ -116,10 +117,11 @@ class Progress_Bar:
         return time_left
 
     def report_progress(self, cal_type='simple'):
-        time_now, progress_ratio, progress_ratio_round, elapsed_time = self.get_progress_report_elements()
+        if (self.i % self.report_interval) == 0:
+            time_now, progress_ratio, progress_ratio_round, elapsed_time = self.get_progress_report_elements()
 
-        if (self.i > 0) & ((self.i % self.report_interval) == 0):
-            time_left = self.estimate_time_left(elapsed_time, progress_ratio, cal_type)
-            self.progress_bar_cmd(progress_ratio_round, elapsed_time, time_left)
+            if self.i > 0:
+                time_left = self.estimate_time_left(elapsed_time, progress_ratio, cal_type)
+                self.progress_bar_cmd(progress_ratio_round, elapsed_time, time_left)
 
-        self.clear_report_bar()
+            self.clear_report_bar()

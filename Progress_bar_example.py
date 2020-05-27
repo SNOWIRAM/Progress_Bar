@@ -3,7 +3,7 @@ import random
 
 def simple_sum(sum_list, progress_bar=False):
     if progress_bar:
-        progress_bar_instance = Progress_Bar(len(sum_list))
+        progress_bar_instance = Progress_Bar(len(sum_list), report_interval=100)
 
     tot_sum = 0
 
@@ -16,9 +16,10 @@ def simple_sum(sum_list, progress_bar=False):
 
     return tot_sum
 
-
 if __name__ == '__main__':
 
-    iter_n = 100000
+    iter_n = 1000000
     sum_list = [random.randint(1, 10) for i in range(iter_n)]
+    start_time = time.time()
     simple_sum_value = simple_sum(sum_list, progress_bar=True)
+    print(time.time()- start_time)
