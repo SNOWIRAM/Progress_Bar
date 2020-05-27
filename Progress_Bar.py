@@ -2,11 +2,14 @@ import time
 import matplotlib
 import sys
 import inspect
+import math
 
 class Progress_Bar:
     avg_time_inc = 0
+    weight_avg_time_inc = 0
     executing_time = 0
     time_inc = 0
+    avg_time_inc_ratio = 1
 
     cmd_max_bar = 20
     percentage_transform_factor = 100
@@ -32,13 +35,27 @@ class Progress_Bar:
     def set_time_inc(self, executing_time):
         self.time_inc = executing_time - self.executing_time
 
+    def cal_time_inc(self, executing_time):
+        return executing_time - self.executing_time
+
+    def get_pre_time_inc(self):
+        return self.time_inc
+
     def set_executing_time(self, progress_time):
         self.executing_time = progress_time - self.progress_time
 
     def set_progress_time(self, progress_time):
         self.progress_time = progress_time
 
+    def set_avg_time_inc(self, time_inc_unit):
+        if self.avg_time_inc == 0:
+            self.avg_time_inc = self.time_inc
+        self.avg_time_inc = time_inc_unit / (self.i + 1) + ((self.avg_time_inc) * self.i / (self.i + 1))
+
+
     def set_progress_info(self, i, progress_time):
+        if self.avg_time_inc == 0:
+            self.avg_time_inc = self.time_inc
         temp_executing_time = progress_time - self.progress_time
 
         self.set_progress_iter_num(i)
@@ -75,63 +92,34 @@ class Progress_Bar:
     def report_elapsed_time(self):
         print('Elapsed time:', round(self.progress_time - self.start_time), 'sec(s)', '\n')
 
-
-    def set_avg_time_inc(self, time_inc_unit):
-        self.avg_time_inc = time_inc_unit/(self.i+1) + ((self.avg_time_inc)*self.i/(self.i+1))
-
-    def progress_report_simple_fn(self):
-
+    def get_progress_report_elements(self):
         time_now = time.time()
         progress_ratio = (self.i+1) / (self.total_len + 1)
         progress_ratio_round = int(round((self.i + 1) / self.total_len * 100))
         elapsed_time = (time_now - self.start_time)
 
-        if (self.i > 0) & ((self.i % self.report_interval) == 0):
+        return time_now, progress_ratio, progress_ratio_round, elapsed_time
+
+    def clear_report_bar(self):
+        if (self.i +1) == self.total_len:
+            print()
+            self.report_elapsed_time()
+
+    def estimate_time_left(self, elapsed_time, progress_ratio, type='simple'):
+        if type == 'simple':
             time_left = (elapsed_time / progress_ratio) - elapsed_time
-            self.progress_bar_cmd(progress_ratio_round, elapsed_time, time_left)
+        elif type == 'cons_inc':
+            time_left = (elapsed_time / progress_ratio +
+                         1/2 * self.avg_time_inc * (self.total_len - (self.i + 1)) ** 2 +
+                         1/2 * self.avg_time_inc * (self.total_len - (self.i + 1))) - elapsed_time
 
-        if (self.i +1) == self.total_len:
-            print()
-            self.report_elapsed_time()
+        return time_left
 
-        return 0
-
-    #FIMXE: 여기서 부터
-    def progress_report_adj_time_inc_fn(self):
-
-        time_now = time.time()
-        progress_ratio = (self.i+1) / (self.total_len + 1)
-        progress_ratio_round = int(round((self.i + 1) / self.total_len * 100))
-        elapsed_time = (time_now - self.start_time)
+    def report_progress(self, cal_type='simple'):
+        time_now, progress_ratio, progress_ratio_round, elapsed_time = self.get_progress_report_elements()
 
         if (self.i > 0) & ((self.i % self.report_interval) == 0):
-            time_left = ((time_now - self.start_time) / progress_ratio + self.avg_time_inc *
-                         (self.total_len - (self.i + 1))) - (time_now - self.start_time)
-
+            time_left = self.estimate_time_left(elapsed_time, progress_ratio, cal_type)
             self.progress_bar_cmd(progress_ratio_round, elapsed_time, time_left)
 
-        if (self.i +1) == self.total_len:
-            print()
-            self.report_elapsed_time()
-
-        return 0
-
-    def progress_report_adj_time_inc_sq_fn(self):
-
-        time_now = time.time()
-        progress_ratio = (self.i+1) / (self.total_len + 1)
-        progress_ratio_round = int(round((self.i + 1) / self.total_len * 100))
-        elapsed_time = (time_now - self.start_time)
-
-        if (self.i > 0) & ((self.i % self.report_interval) == 0):
-            time_left = ((time_now - self.start_time) / progress_ratio +
-                         self.avg_time_inc * (self.total_len - (self.i + 1)) +
-                         (self.avg_time_inc)**2 * (self.total_len - (self.i + 1))) - (time_now - self.start_time)
-
-            self.progress_bar_cmd(progress_ratio_round, elapsed_time, time_left)
-
-        if (self.i +1) == self.total_len:
-            print()
-            self.report_elapsed_time()
-
-        return 0
+        self.clear_report_bar()

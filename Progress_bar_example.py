@@ -12,7 +12,7 @@ def simple_sum(sum_list, progress_bar=False):
 
         if progress_bar:
             progress_bar_instance.set_progress_info(i, time.time())
-            progress_bar_instance.progress_report_simple_fn()
+            progress_bar_instance.report_progress()
 
     return tot_sum
 
